@@ -1,0 +1,22 @@
+# Terminkalender Security (world4you compatible - minimal version)
+
+# Prevent directory listing
+Options -Indexes
+
+# Protect sensitive directories
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^includes/ - [F,L]
+</IfModule>
+
+# Protect sensitive files
+<FilesMatch "^(config\.php|\.env|\.log|\.ini|\.bak|\.sql)$">
+    Require all denied
+</FilesMatch>
+
+# Security headers (optional - comment out if causing issues)
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header set X-Frame-Options "SAMEORIGIN"
+</IfModule>

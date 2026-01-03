@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Calendar Debug</title>
+    <style>
+        body { font-family: monospace; padding: 20px; }
+        button { margin: 10px; padding: 10px 20px; font-size: 16px; }
+        .info { background: #f0f0f0; padding: 15px; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Calendar Navigation Debug</h1>
+
+    <div class="info" id="current-info"></div>
+
+    <button id="prev">← Previous Week</button>
+    <button id="next">Next Week →</button>
+
+    <div class="info" id="log"></div>
+
+    <script>
+        function getMonday(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            d.setDate(diff);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        let currentWeekStart = getMonday(new Date());
+        let log = [];
+
+        function updateDisplay() {
+            const today = getMonday(new Date());
+
+            document.getElementById('current-info').innerHTML = `
+                <strong>Current Week Start:</strong> ${currentWeekStart.toISOString()}<br>
+                <strong>Today (Monday):</strong> ${today.toISOString()}<br>
+                <strong>Current Week Timestamp:</strong> ${currentWeekStart.getTime()}<br>
+                <strong>Today Timestamp:</strong> ${today.getTime()}<br>
+                <strong>Same week?</strong> ${currentWeekStart.getTime() === today.getTime() ? 'YES' : 'NO'}
+            `;
+        }
+
+        function addLog(message) {
+            log.push(`[${new Date().toLocaleTimeString()}] ${message}`);
+            document.getElementById('log').innerHTML = '<h3>Log:</h3>' + log.slice(-10).join('<br>');
+        }
+
+        document.getElementById('prev').addEventListener('click', function() {
+            const today = getMonday(new Date());
+            const prevWeek = new Date(currentWeekStart);
+            prevWeek.setDate(prevWeek.getDate() - 7);
+
+            addLog(`Attempting: ${currentWeekStart.toISOString()} → ${prevWeek.toISOString()}`);
+            addLog(`prevWeek.getTime() = ${prevWeek.getTime()}, today.getTime() = ${today.getTime()}`);
+            addLog(`prevWeek >= today? ${prevWeek.getTime() >= today.getTime()}`);
+
+            if (prevWeek.getTime() >= today.getTime()) {
+                currentWeekStart = prevWeek;
+                addLog('✓ Navigation allowed');
+            } else {
+                addLog('✗ Navigation blocked (before current week)');
+            }
+
+            updateDisplay();
+        });
+
+        document.getElementById('next').addEventListener('click', function() {
+            const nextWeek = new Date(currentWeekStart);
+            nextWeek.setDate(nextWeek.getDate() + 7);
+
+            addLog(`Navigating: ${currentWeekStart.toISOString()} → ${nextWeek.toISOString()}`);
+            currentWeekStart = nextWeek;
+            updateDisplay();
+        });
+
+        updateDisplay();
+        addLog('Debug page loaded');
+    </script>
+</body>
+</html>
